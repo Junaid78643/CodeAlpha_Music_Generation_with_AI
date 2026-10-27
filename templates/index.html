@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AuraTone AI | Neural Music Composer & Synthesizer</title>
+  <meta name="description" content="Generate authentic Classical and Jazz music using Deep Recurrent Neural Networks (LSTM), trained on MIDI compositions with real-time Piano Roll visualization and audio synthesis.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <!-- Ambient background glow layers -->
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+  <div class="glow-orb orb-3"></div>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand-group">
+        <div class="brand-logo">
+          <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="32" height="32" rx="8" fill="url(#logo-grad)"/>
+            <path d="M11 22V10L21 8V20" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="9" cy="22" r="3" fill="#FFFFFF"/>
+            <circle cx="19" cy="20" r="3" fill="#FFFFFF"/>
+            <defs>
+              <linearGradient id="logo-grad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#8B5CF6"/>
+                <stop offset="1" stop-color="#06B6D4"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">AuraTone <span class="gradient-text">AI Studio</span></h1>
+          <p class="brand-subtitle">Deep LSTM Music Generation with Real-Time Synthesis</p>
+        </div>
+      </div>
+
+      <!-- Live Model Badges -->
+      <div class="header-badges">
+        <div class="status-badge" id="classical-badge">
+          <span class="status-dot"></span>
+          <span>Classical LSTM: <strong id="classical-status-text">Ready</strong></span>
+        </div>
+        <div class="status-badge" id="jazz-badge">
+          <span class="status-dot"></span>
+          <span>Jazz/Blues LSTM: <strong id="jazz-status-text">Ready</strong></span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Workspace Grid -->
+    <main class="studio-grid">
+      <!-- Control Panel (Left Column) -->
+      <section class="panel control-panel">
+        <div class="panel-header">
+          <h2 class="panel-title">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+            Composition Parameters
+          </h2>
+          <span class="pill-indicator">Neural Engine</span>
+        </div>
+
+        <!-- Genre Selection -->
+        <div class="control-group">
+          <label class="control-label">Musical Genre & Style</label>
+          <div class="genre-selector">
+            <button type="button" class="genre-btn active" data-genre="classical" id="btn-classical">
+              <span class="genre-icon">🎻</span>
+              <span class="genre-name">Classical</span>
+              <span class="genre-desc">Bach, Beethoven, Chopin Chorales</span>
+            </button>
+            <button type="button" class="genre-btn" data-genre="jazz" id="btn-jazz">
+              <span class="genre-icon">🎷</span>
+              <span class="genre-name">Jazz & Blues</span>
+              <span class="genre-desc">Joplin Ragtime, ii-V-I Cadences</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Temperature Slider -->
+        <div class="control-group">
+          <div class="label-with-value">
+            <label class="control-label" for="temp-slider">Creativity / Temperature</label>
+            <span class="val-display" id="temp-val">0.85</span>
+          </div>
+          <input type="range" id="temp-slider" min="0.2" max="1.8" step="0.05" value="0.85">
+          <div class="slider-ticks">
+            <span>Rigid Harmony (0.2)</span>
+            <span id="temp-description" class="badge-accent">Harmonic Sweet-spot</span>
+            <span>Wild Improvisation (1.8)</span>
+          </div>
+        </div>
+
+        <!-- Sequence Length Slider -->
+        <div class="control-group">
+          <div class="label-with-value">
+            <label class="control-label" for="notes-slider">Sequence Length (Notes/Chords)</label>
+            <span class="val-display" id="notes-val">45</span>
+          </div>
+          <input type="range" id="notes-slider" min="20" max="100" step="5" value="45">
+          <div class="slider-ticks">
+            <span>20 (Short Motif)</span>
+            <span>60 (Phrase)</span>
+            <span>100 (Full Piece)</span>
+          </div>
+        </div>
+
+        <!-- Tempo / BPM Slider -->
+        <div class="control-group">
+          <div class="label-with-value">
+            <label class="control-label" for="bpm-slider">Playback Tempo (BPM)</label>
+            <span class="val-display" id="bpm-val">105 BPM</span>
+          </div>
+          <input type="range" id="bpm-slider" min="60" max="160" step="5" value="105">
+        </div>
+
+        <!-- Generate Button -->
+        <button type="button" class="btn-generate" id="generate-btn">
+          <span class="btn-icon">⚡</span>
+          <span class="btn-text">Generate AI Composition</span>
+          <span class="spinner" id="generate-spinner"></span>
+        </button>
+
+        <!-- Playback & Download Controls -->
+        <div class="playback-card" id="playback-section" style="display: none;">
+          <div class="playback-header">
+            <div>
+              <h3 class="track-title" id="track-name">ai_composition_classical.mid</h3>
+              <p class="track-meta" id="track-meta">45 Notes • 18.5s • 105 BPM</p>
+            </div>
+            <button class="btn-icon-circle" id="play-pause-btn" title="Play/Pause">
+              <span id="play-icon">▶</span>
+            </button>
+          </div>
+
+          <div class="audio-progress-container">
+            <div class="progress-bar" id="audio-progress-bar">
+              <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="time-readout">
+              <span id="current-time-text">0:00</span>
+              <span id="total-time-text">0:00</span>
+            </div>
+          </div>
+
+          <!-- Hidden Native Audio for Synthesized WAV -->
+          <audio id="native-audio" preload="auto"></audio>
+
+          <!-- Export Actions -->
+          <div class="export-actions">
+            <a href="#" class="btn-export btn-midi" id="download-midi-btn" download>
+              <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+              </svg>
+              Download MIDI (.mid)
+            </a>
+            <a href="#" class="btn-export btn-wav" id="download-wav-btn" download>
+              <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm12-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+              </svg>
+              Download WAV Audio (.wav)
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Visualizer & Token Timeline -->
+      <section class="panel visualizer-panel">
+        <div class="panel-header">
+          <div class="tab-group">
+            <button class="tab-btn active" id="tab-pianoroll">Interactive Piano Roll</button>
+            <button class="tab-btn" id="tab-tokens">Token Sequence</button>
+            <button class="tab-btn" id="tab-analytics">Loss & Training</button>
+          </div>
+          <span class="live-pill" id="live-indicator">LIVE PREVIEW</span>
+        </div>
+
+        <!-- Tab 1: Interactive Piano Roll Visualizer -->
+        <div class="tab-content" id="view-pianoroll">
+          <div class="canvas-wrapper">
+            <canvas id="pianoRollCanvas" width="850" height="380"></canvas>
+            <div class="canvas-empty-state" id="canvas-empty">
+              <span class="empty-icon">🎹</span>
+              <p>Hit "Generate AI Composition" to produce and visualize your musical piece in the piano roll!</p>
+            </div>
+          </div>
+          <div class="visualizer-legend">
+            <div class="legend-item"><span class="legend-color c-root"></span> Tonic Notes</div>
+            <div class="legend-item"><span class="legend-color c-chord"></span> Chords / Harmonies</div>
+            <div class="legend-item"><span class="legend-color c-melody"></span> Melodic Passing</div>
+            <div class="legend-item"><span class="legend-color c-playhead"></span> Active Playhead</div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Token Sequence View -->
+        <div class="tab-content" id="view-tokens" style="display: none;">
+          <div class="token-container" id="token-chips-wrapper">
+            <p class="empty-note">Generate music to inspect the tokenized note stream.</p>
+          </div>
+        </div>
+
+        <!-- Tab 3: Model Training & Loss Curve -->
+        <div class="tab-content" id="view-analytics" style="display: none;">
+          <div class="analytics-card">
+            <div class="analytics-header">
+              <h3>LSTM Training Convergence Curve</h3>
+              <button class="btn-sm btn-train" id="trigger-train-btn">Retrain Model</button>
+            </div>
+            <div class="loss-chart-box">
+              <canvas id="lossCanvas" width="800" height="230"></canvas>
+            </div>
+            <div class="stats-mini-grid">
+              <div class="stat-mini-card">
+                <span class="stat-label">Classical Dataset Tokens</span>
+                <span class="stat-value" id="stat-classical-tokens">9,093</span>
+              </div>
+              <div class="stat-mini-card">
+                <span class="stat-label">Jazz Dataset Tokens</span>
+                <span class="stat-value" id="stat-jazz-tokens">1,465</span>
+              </div>
+              <div class="stat-mini-card">
+                <span class="stat-label">Vocabulary Size</span>
+                <span class="stat-value" id="stat-vocab">259 Classes</span>
+              </div>
+              <div class="stat-mini-card">
+                <span class="stat-label">Convergence Loss</span>
+                <span class="stat-value text-accent" id="stat-loss">0.0006</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Project Pipeline Documentation -->
+    <section class="pipeline-section">
+      <h2 class="pipeline-title">How AuraTone AI Composes Music</h2>
+      <div class="pipeline-steps">
+        <div class="step-card">
+          <div class="step-num">01</div>
+          <h3 class="step-heading">MIDI Ingestion</h3>
+          <p class="step-desc">Parsed authentic Bach, Beethoven chorales and Joplin jazz progressions using <code>music21</code> & <code>mido</code>.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">02</div>
+          <h3 class="step-heading">Token Preprocessing</h3>
+          <p class="step-desc">Notes, chords, and rhythmic durations quantized into structured tokens with sliding 16-step window frames.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">03</div>
+          <h3 class="step-heading">Deep LSTM Network</h3>
+          <p class="step-desc">Multi-gate recurrent neural network with Adam optimization learns temporal dependencies and harmonic cadence.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">04</div>
+          <h3 class="step-heading">Harmonic Synthesis</h3>
+          <p class="step-desc">Autoregressive temperature sampling decodes tokens into Standard MIDI (.mid) and master 44.1kHz WAV audio.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
